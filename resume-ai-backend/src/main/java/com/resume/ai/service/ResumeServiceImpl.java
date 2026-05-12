@@ -1,14 +1,45 @@
 package com.resume.ai.service;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-@Service
-public class ResumeServiceImpl {
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
 
-    private ChatClient chatClient;
+@Service
+public class ResumeServiceImpl implements ResumeService{
+
+    private final ChatClient chatClient;
 
     public ResumeServiceImpl(ChatClient.Builder builder){this.chatClient=builder.build();}
 
 
+    @Override
+    public String generateResumeResponse(String userResumeDescription) throws IOException {
+        String promptString = this.loadPromptFromFile("resume_prompt.txt");
+        String promptContent= this.putValuesToTemplate(promptString,Map.of(
+                "userDescription",userResumeDescription
+        ));
+        Prompt prompt = new Prompt(promptContent);
+        return chatClient.prompt(prompt).call().content();
+
+    }
+
+
+    public String loadPromptFromFile(String filename) throws IOException {
+        Path path = new ClassPathResource(filename).getFile().toPath();
+        return Files.readString(path);
+    }
+
+    public String putValuesToTemplate(String template, Map<String,String> values){
+        for(Map.Entry<String,String> entry : values.entrySet()){
+            template = template.replace("{{" + entry.getKey() + "}}", entry.getValue());
+
+        }
+        return template;
+    }
 }
