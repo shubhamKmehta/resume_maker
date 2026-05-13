@@ -1,7 +1,8 @@
 package com.resume.ai.service;
 
 import java.io.IOException;
+import java.util.Map;
 
 public interface ResumeService  {
-    String generateResumeResponse(String userResumeDescription)throws IOException;
+    Map<String, Object> generateResumeResponse(String userResumeDescription)throws IOException;
 }
